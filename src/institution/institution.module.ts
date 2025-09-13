@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { CertificateModule } from 'src/certificate/certificate.module';
+import { ProgramModule } from 'src/program/program.module';
+import { StudentModule } from 'src/student/student.module';
+import { UserModule } from 'src/user/user.module';
+import { InstitutionController } from './institution.controller';
+import { InstitutionService } from './institution.service';
+
+@Module({
+  imports: [UserModule, StudentModule, ProgramModule, CertificateModule],
+  controllers: [InstitutionController],
+  providers: [InstitutionService],
+})
+export class InstitutionModule {}

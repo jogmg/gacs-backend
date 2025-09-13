@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { matchPassword } from 'src/shared/utils/hash.utils';
 import { UserService } from 'src/user/user.service';
@@ -12,18 +13,25 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
-  async sigIn(userEmail: string, userPassword: string) {
-    const user = await this.userService.findOneByEmail(userEmail);
+  async signIn(email: string, password: string) {
+    const user = await this.userService.findOneByEmail(email);
     if (!user) throw new NotFoundException('User Not Found');
 
-    const isPassword = await matchPassword(userPassword, user?.password!);
+    const isPassword = await matchPassword(password, user.password);
     if (!isPassword) throw new UnauthorizedException();
 
-    const payload = { sub: user?.id, email: user?.email };
-    const access_token = await this.jwtService.signAsync(payload);
+    const role =
+      user.email === this.configService.get<string>('ADMIN')
+        ? 'admin'
+        : 'organization';
 
-    return { access_token };
+    const payload = { id: user.id, role };
+    const access_token = await this.jwtService.signAsync(payload);
+    const data = await this.jwtService.verifyAsync(access_token);
+
+    return { access_token, data };
   }
 }

@@ -1,13 +1,25 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+} from 'class-validator';
 
 export class CreateUserDto {
+  @IsNotEmpty()
+  name: string;
+
   @IsEmail()
   email: string;
 
-  @IsEnum(['guest', 'admin', 'institution'], {
-    message: 'userType must be either guest, admin, or institution',
-  })
-  userType: 'guest' | 'admin' | 'institution';
+  @IsOptional()
+  @IsPhoneNumber('NG')
+  phoneNumber: string;
+
+  // @IsEnum(['individual', 'organization'], {
+  //   message: 'Type must be either individual or organization',
+  // })
+  // type: 'individual' | 'organization';
 
   //   @IsStrongPassword({
   //     minLength: 6,
@@ -19,6 +31,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  @IsOptional()
-  organization: string;
+  // @IsOptional()
+  // organization: string;
 }

@@ -3,17 +3,24 @@ import { BaseSchema } from 'src/shared/utils/base-schema.utils';
 
 @Schema({ timestamps: true })
 export class User extends BaseSchema {
+  @Prop({ required: true })
+  name: string;
+
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, enum: ['guest', 'admin', 'institution'] })
-  userType: 'guest' | 'admin' | 'institution';
+  @Prop()
+  phoneNumber?: string;
+
+  // ! Admin user should be tied to a particular email, preferably company email.
+  // @Prop({ required: true, enum: ['individual', 'organization'] })
+  // type: 'individual' | 'organization';
 
   @Prop({ required: true })
   password: string;
 
-  @Prop()
-  organization?: string;
+  // @Prop()
+  // organization?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

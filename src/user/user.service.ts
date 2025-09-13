@@ -17,7 +17,7 @@ export class UserService {
     const newUser = { ...user, password: hashedPassword };
     const createdUser = new this.userModel(newUser);
 
-    return createdUser.save();
+    return await createdUser.save();
   }
 
   async findAll() {
