@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { CertificateModule } from 'src/certificate/certificate.module';
 import { ProgramModule } from 'src/program/program.module';
@@ -7,7 +8,13 @@ import { InstitutionController } from './institution.controller';
 import { InstitutionService } from './institution.service';
 
 @Module({
-  imports: [UserModule, StudentModule, ProgramModule, CertificateModule],
+  imports: [
+    UserModule,
+    StudentModule,
+    ProgramModule,
+    CertificateModule,
+    HttpModule,
+  ],
   controllers: [InstitutionController],
   providers: [InstitutionService],
 })

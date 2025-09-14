@@ -14,7 +14,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsPhoneNumber('NG')
-  phoneNumber: string;
+  phoneNumber?: string;
 
   // @IsEnum(['individual', 'organization'], {
   //   message: 'Type must be either individual or organization',
@@ -32,5 +32,5 @@ export class CreateUserDto {
   password: string;
 
   // @IsOptional()
-  // organization: string;
+  // organization?: string;
 }

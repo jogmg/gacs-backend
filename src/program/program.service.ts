@@ -17,19 +17,24 @@ export class ProgramService {
 
   async findAll() {
     return await this.programService.find();
-    // .populate<{ institution: Institution }>('institution', '-password');
   }
 
   async findByInstitutionId(institutionId: string) {
     return await this.programService.find({ institution: institutionId });
   }
 
-  async findOne(id: string) {
+  async findOneById(id: string) {
     return await this.programService.findById(id);
   }
 
+  async findOneByName(name: string) {
+    return await this.programService.findOne({ name });
+  }
+
   async update(id: string, updateProgramDto: UpdateProgramDto) {
-    return await this.programService.findByIdAndUpdate(id, updateProgramDto);
+    return await this.programService.findByIdAndUpdate(id, updateProgramDto, {
+      new: true,
+    });
   }
 
   async delete(id: string) {

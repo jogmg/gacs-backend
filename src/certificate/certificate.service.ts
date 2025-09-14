@@ -32,6 +32,7 @@ export class CertificateService {
     return await this.certificateService.findByIdAndUpdate(
       id,
       updateCertificateDto,
+      { new: true },
     );
   }
 

@@ -15,6 +15,10 @@ export class StudentService {
     return await this.studentService.create(createStudentDto);
   }
 
+  async createMany(createStudentDto: CreateStudentDto[]) {
+    return await this.studentService.insertMany(createStudentDto);
+  }
+
   async findAll() {
     return await this.studentService.find();
   }
@@ -23,8 +27,29 @@ export class StudentService {
     return await this.studentService.findById(id);
   }
 
+  async findOneByInstitution(institutionId: string, studentCode: string) {
+    return await this.studentService.findOne({
+      institution: institutionId,
+      code: studentCode,
+    });
+  }
+
   async update(id: string, updateStudentDto: UpdateStudentDto) {
-    return await this.studentService.findByIdAndUpdate(id, updateStudentDto);
+    return await this.studentService.findByIdAndUpdate(id, updateStudentDto, {
+      new: true,
+    });
+  }
+
+  async findOneByInstituitonAndUpdate(
+    institutionId: string,
+    studentCode: string,
+    updateStudentDto: UpdateStudentDto,
+  ) {
+    return await this.studentService.findOneAndUpdate(
+      { institution: institutionId, code: studentCode },
+      updateStudentDto,
+      { new: true },
+    );
   }
 
   async delete(id: string) {

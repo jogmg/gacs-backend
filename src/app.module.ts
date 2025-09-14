@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CertificateModule } from './certificate/certificate.module';
 import { InstitutionModule } from './institution/institution.module';
 import { ProgramModule } from './program/program.module';
 import { StudentModule } from './student/student.module';
 import { UserModule } from './user/user.module';
-import { CertificateModule } from './certificate/certificate.module';
 
 @Module({
   imports: [
@@ -18,6 +20,10 @@ import { CertificateModule } from './certificate/certificate.module';
         uri: configService.get<string>('MONGODB_URI'),
       }),
       inject: [ConfigService],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'assets'),
+      serveRoot: '/assets',
     }),
     UserModule,
     AuthModule,

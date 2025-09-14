@@ -30,8 +30,7 @@ export class AuthService {
 
     const payload = { id: user.id, role };
     const access_token = await this.jwtService.signAsync(payload);
-    const data = await this.jwtService.verifyAsync(access_token);
 
-    return { access_token, data };
+    return { access_token };
   }
 }

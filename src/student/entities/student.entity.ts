@@ -9,11 +9,17 @@ export class Student extends BaseSchema {
   @Prop({ required: true, ref: 'Program' })
   program: string;
 
+  @Prop({ required: true, unique: true })
+  code: string;
+
   @Prop({ required: true })
   name: string;
 
   @Prop({ required: true })
-  completionDate: string;
+  graduationDate: string;
+
+  @Prop()
+  imgURL?: string;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

@@ -1,15 +1,26 @@
-import { IsDateString, IsMongoId, IsNotEmpty } from 'class-validator';
+import {
+  IsDateString,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateStudentDto {
   @IsMongoId()
   institution: string;
 
-  @IsNotEmpty()
+  @IsMongoId()
   program: string;
+
+  @IsNotEmpty()
+  code: string;
 
   @IsNotEmpty()
   name: string;
 
   @IsDateString()
-  completionDate: string;
+  graduationDate: string;
+
+  @IsOptional()
+  imgURL?: string;
 }

@@ -21,6 +21,9 @@ export class User extends BaseSchema {
 
   // @Prop()
   // organization?: string;
+
+  @Prop({ default: 0 })
+  studentCount: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

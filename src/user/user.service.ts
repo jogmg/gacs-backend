@@ -33,7 +33,19 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return await this.userModel.findByIdAndUpdate(id, updateUserDto);
+    return await this.userModel.findByIdAndUpdate(id, updateUserDto, {
+      new: true,
+    });
+  }
+
+  async incrementStudentCount(id: string) {
+    return await this.userModel.findByIdAndUpdate(
+      id,
+      {
+        $inc: { studentCount: 1 },
+      },
+      { new: true },
+    );
   }
 
   async delete(id: string) {

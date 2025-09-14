@@ -27,7 +27,7 @@ export class ProgramController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.programService.findOne(id);
+    return await this.programService.findOneById(id);
   }
 
   @Put(':id')
