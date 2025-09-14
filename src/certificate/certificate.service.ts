@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Student } from 'src/student/entities/student.entity';
+import { User } from 'src/user/entities/user.entity';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { Certificate } from './entities/certificate.entity';
@@ -13,7 +15,12 @@ export class CertificateService {
   ) {}
 
   async create(createCertificateDto: CreateCertificateDto) {
-    return await this.certificateService.create(createCertificateDto);
+    return (
+      await this.certificateService.create(createCertificateDto)
+    ).populate<{ institution: User; student: Student }>([
+      { path: 'institution', select: '-password' },
+      { path: 'student' },
+    ]);
   }
 
   async findAll() {
@@ -22,6 +29,18 @@ export class CertificateService {
 
   async findByInstitutionId(institutionId: string) {
     return await this.certificateService.find({ institution: institutionId });
+  }
+
+  async findByInstitutionAndStudent(institutionId: string, studentId: string) {
+    return await this.certificateService
+      .findOne({
+        institution: institutionId,
+        student: studentId,
+      })
+      .populate<{ institution: User; student: Student }>([
+        { path: 'institution', select: '-password' },
+        { path: 'student' },
+      ]);
   }
 
   async findOne(id: string) {

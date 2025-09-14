@@ -183,20 +183,25 @@ export class InstitutionService {
   }
 
   async generateStudentCertificate(institutionId: string, studentId: string) {
-    const newCertificate = await this.certificateService.create({
-      institution: institutionId,
-      student: studentId,
-    });
+    let certificate = await this.certificateService.findByInstitutionAndStudent(
+      institutionId,
+      studentId,
+    );
 
-    const studentName = normalizeToLowercase(newCertificate.student.name);
-    const studentCode = newCertificate.student.code;
+    if (!certificate) {
+      certificate = await this.certificateService.create({
+        institution: institutionId,
+        student: studentId,
+      });
+    }
+
+    const studentName = normalizeToLowercase(certificate.student.name);
+    const studentCode = certificate.student.code;
+    const fileName = `${studentName}_${studentCode}_graduation_certificate.pdf`;
 
     const verificationUrl = `${this.configService.get<string>('FRONTEND_URL')}/verify`;
-    const pdfBuffer = generateCertificate(newCertificate, verificationUrl);
+    const pdfBuffer = generateCertificate(certificate, verificationUrl);
 
-    return {
-      fileName: `${studentName}_${studentCode}_graduation_certificate.pdf`,
-      pdfBuffer,
-    };
+    return { fileName, pdfBuffer };
   }
 }

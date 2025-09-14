@@ -4,20 +4,8 @@ import { format } from 'date-fns';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { PDFDocument, rgb } from 'pdf-lib';
-import * as QRCode from 'qrcode';
+import QRCode from 'qrcode';
 import { Certificate } from 'src/certificate/entities/certificate.entity';
-
-interface CertificateData {
-  name: string;
-  dob: string;
-  matricNo: string;
-  course: string;
-  grade: string;
-  graduationYear: string;
-  issueDate: string;
-  expiryDate: string;
-  token: string;
-}
 
 export async function generateCertificate(
   certificate: Certificate,
@@ -28,6 +16,7 @@ export async function generateCertificate(
     __dirname,
     '../../../assets/templates/certificate-template.pdf',
   );
+
   const templateBytes = readFileSync(templatePath);
   const pdfDoc = await PDFDocument.load(templateBytes);
   pdfDoc.registerFontkit(fontkit);
@@ -46,49 +35,83 @@ export async function generateCertificate(
   );
   page.drawImage(qrImage, {
     x: (width - 100) / 2,
-    y: 100,
+    y: 55,
     width: 105,
     height: 105,
   });
 
-  // // Add Font and Color
-  // const funtasticPath = join(
-  //   __dirname,
-  //   '../../../assets/fonts/Funtastic-Regular.ttf',
-  // );
-  // const balsamiqPath = join(
-  //   __dirname,
-  //   '../../../assets/fonts/BalsamiqSans-Regular.ttf',
-  // );
-  // const funtasticData = readFileSync(funtasticPath);
-  // const balsamiqData = readFileSync(balsamiqPath);
-  // const funtasticFont = await pdfDoc.embedFont(funtasticData);
-  // const balsamiqFont = await pdfDoc.embedFont(balsamiqData);
-  // const textColor = rgb(0.482, 0.306, 0.212);
+  // Add Font and Color
+  const engagementPath = join(
+    __dirname,
+    '../../../assets/fonts/Engagement.ttf',
+  );
+  const engrvrsOldEngPath = join(
+    __dirname,
+    '../../../assets/fonts/EngrvrsOldEng-BT.ttf',
+  );
+  const montserratPath = join(
+    __dirname,
+    '../../../assets/fonts/Montserrat-Bold.ttf',
+  );
 
-  // // Add Text
-  // const certTextWidth = funtasticFont.widthOfTextAtSize('CERTIFICATE', 62.8);
-  // const certTextX = width / 6.37;
-  // const nameTextWidth = funtasticFont.widthOfTextAtSize(
-  //   certificate.name.toUpperCase(),
-  //   37,
-  // );
-  // const nameTextX = certTextX + (certTextWidth - nameTextWidth) / 2; // Center name text horizontally relative to Certificate text
+  const engagementData = readFileSync(engagementPath);
+  const engrvrsOldEngData = readFileSync(engrvrsOldEngPath);
+  const montserratData = readFileSync(montserratPath);
 
-  // page.drawText(certificate.name.toUpperCase(), {
-  //   x: nameTextX,
-  //   y: height - 308,
-  //   size: 37,
-  //   font: funtasticFont,
-  //   color: textColor,
-  // });
-  // page.drawText(format(certificate.issueDate, 'do MMMM, yyyy'), {
-  //   x: 322,
-  //   y: height - 359.5,
-  //   size: 16.2,
-  //   font: balsamiqFont,
-  //   color: textColor,
-  // });
+  const engagementFont = await pdfDoc.embedFont(engagementData);
+  const engrvrsOldEngFont = await pdfDoc.embedFont(engrvrsOldEngData);
+  const montserratFont = await pdfDoc.embedFont(montserratData);
+
+  const engagementColor = rgb(0, 0, 0);
+  const engrvrsOldEngColor = rgb(0, 0.05, 0.329);
+
+  // Add SubHeading Text
+  const subHeadingWidth = engagementFont.widthOfTextAtSize(
+    `Class Of ${certificate.student.graduationDate.split('-')[0]}`,
+    55,
+  );
+  const subHeadingX = subHeadingWidth / 2;
+
+  page.drawText(
+    `Class Of ${certificate.student.graduationDate.split('-')[0]}`,
+    {
+      x: width / 2 - subHeadingX,
+      y: height - 188,
+      size: 55,
+      font: engagementFont,
+      color: engagementColor,
+    },
+  );
+
+  // Add Name Text
+  const nameWidth = engrvrsOldEngFont.widthOfTextAtSize(
+    certificate.student.name,
+    65,
+  );
+  const nameX = nameWidth / 2;
+
+  page.drawText(certificate.student.name, {
+    x: width / 2 - nameX,
+    y: height - 305,
+    size: 65,
+    font: engrvrsOldEngFont,
+    color: engrvrsOldEngColor,
+  });
+
+  // Add Date Text
+  const dateWidth = montserratFont.widthOfTextAtSize(
+    format(certificate.student.graduationDate, 'PPPP'),
+    18,
+  );
+  const dateX = dateWidth / 2;
+
+  page.drawText(format(certificate.student.graduationDate, 'PPPP'), {
+    x: width / 2 - dateX,
+    y: height - 416,
+    size: 18,
+    font: montserratFont,
+    color: engrvrsOldEngColor,
+  });
 
   // Save and return PDF
   const pdfBytes = await pdfDoc.save();

@@ -61,13 +61,13 @@ export class InstitutionController {
     @Param('studentId') studentId: string,
     @Res() res: Response,
   ) {
-    const { fileName, pdfBuffer } =
+    const { pdfBuffer, fileName } =
       await this.institutionService.generateStudentCertificate(
         institutionId,
         studentId,
       );
 
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.send(pdfBuffer);
+    res.attachment(fileName);
+    res.send(await pdfBuffer);
   }
 }
