@@ -1,12 +1,15 @@
 import {
   Controller,
   Get,
+  Header,
   Param,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { InstitutionService } from './institution.service';
 
 @Controller('institutions')
@@ -49,5 +52,22 @@ export class InstitutionController {
       zipFile,
       institutionId,
     );
+  }
+
+  @Post(':institutionId/generateCertificate/:studentId')
+  @Header('Content-Type', 'application/pdf')
+  async generateStudentCertificate(
+    @Param('institutionId') institutionId: string,
+    @Param('studentId') studentId: string,
+    @Res() res: Response,
+  ) {
+    const { fileName, pdfBuffer } =
+      await this.institutionService.generateStudentCertificate(
+        institutionId,
+        studentId,
+      );
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
   }
 }

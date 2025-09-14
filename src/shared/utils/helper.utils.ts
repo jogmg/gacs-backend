@@ -7,3 +7,7 @@ export const toAcronym = (input: string) => {
     .join('')
     .toUpperCase();
 };
+
+export const normalizeToLowercase = (input: string) => {
+  return input.replaceAll(' ', '_').toLowerCase()
+}

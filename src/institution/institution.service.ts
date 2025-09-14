@@ -5,6 +5,8 @@ import AdmZip from 'adm-zip';
 import { lastValueFrom } from 'rxjs';
 import { CertificateService } from 'src/certificate/certificate.service';
 import { ProgramService } from 'src/program/program.service';
+import { normalizeToLowercase } from 'src/shared/utils/helper.utils';
+import { generateCertificate } from 'src/shared/utils/pdf-generator.utils';
 import { StudentService } from 'src/student/student.service';
 import { UserService } from 'src/user/user.service';
 import { Readable } from 'stream';
@@ -178,5 +180,23 @@ export class InstitutionService {
     );
 
     return results;
+  }
+
+  async generateStudentCertificate(institutionId: string, studentId: string) {
+    const newCertificate = await this.certificateService.create({
+      institution: institutionId,
+      student: studentId,
+    });
+
+    const studentName = normalizeToLowercase(newCertificate.student.name);
+    const studentCode = newCertificate.student.code;
+
+    const verificationUrl = `${this.configService.get<string>('FRONTEND_URL')}/verify`;
+    const pdfBuffer = generateCertificate(newCertificate, verificationUrl);
+
+    return {
+      fileName: `${studentName}_${studentCode}_graduation_certificate.pdf`,
+      pdfBuffer,
+    };
   }
 }

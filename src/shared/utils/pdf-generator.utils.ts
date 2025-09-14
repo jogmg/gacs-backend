@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as QRCode from 'qrcode';
+import { Certificate } from 'src/certificate/entities/certificate.entity';
 
 interface CertificateData {
   name: string;
@@ -19,13 +20,13 @@ interface CertificateData {
 }
 
 export async function generateCertificate(
-  data: CertificateData,
+  certificate: Certificate,
   verificationUrl: string,
 ): Promise<Buffer> {
   // Load template
   const templatePath = join(
     __dirname,
-    '../../../static/templates/certificate-template.pdf',
+    '../../../assets/templates/certificate-template.pdf',
   );
   const templateBytes = readFileSync(templatePath);
   const pdfDoc = await PDFDocument.load(templateBytes);
@@ -36,58 +37,58 @@ export async function generateCertificate(
   const { width, height } = page.getSize();
 
   // Generate QR code
-  const qrCodeData = `${verificationUrl}/${data.token}`;
+  const qrCodeData = `${verificationUrl}/${certificate._id}`;
   const qrCode = await QRCode.toDataURL(qrCodeData, { width: 200 });
 
-  // Embed QR code (bottom left)
+  // Embed QR code (bottom)
   const qrImage = await pdfDoc.embedPng(
     Buffer.from(qrCode.split(',')[1], 'base64'),
   );
   page.drawImage(qrImage, {
-    x: (width - 300) / 5,
+    x: (width - 100) / 2,
     y: 100,
     width: 105,
     height: 105,
   });
 
-  // Add Font and Color
-  const funtasticPath = join(
-    __dirname,
-    '../../../static/fonts/Funtastic-Regular.ttf',
-  );
-  const balsamiqPath = join(
-    __dirname,
-    '../../../static/fonts/BalsamiqSans-Regular.ttf',
-  );
-  const funtasticData = readFileSync(funtasticPath);
-  const balsamiqData = readFileSync(balsamiqPath);
-  const funtasticFont = await pdfDoc.embedFont(funtasticData);
-  const balsamiqFont = await pdfDoc.embedFont(balsamiqData);
-  const textColor = rgb(0.482, 0.306, 0.212);
+  // // Add Font and Color
+  // const funtasticPath = join(
+  //   __dirname,
+  //   '../../../assets/fonts/Funtastic-Regular.ttf',
+  // );
+  // const balsamiqPath = join(
+  //   __dirname,
+  //   '../../../assets/fonts/BalsamiqSans-Regular.ttf',
+  // );
+  // const funtasticData = readFileSync(funtasticPath);
+  // const balsamiqData = readFileSync(balsamiqPath);
+  // const funtasticFont = await pdfDoc.embedFont(funtasticData);
+  // const balsamiqFont = await pdfDoc.embedFont(balsamiqData);
+  // const textColor = rgb(0.482, 0.306, 0.212);
 
-  // Add Text
-  const certTextWidth = funtasticFont.widthOfTextAtSize('CERTIFICATE', 62.8);
-  const certTextX = width / 6.37;
-  const nameTextWidth = funtasticFont.widthOfTextAtSize(
-    data.name.toUpperCase(),
-    37,
-  );
-  const nameTextX = certTextX + (certTextWidth - nameTextWidth) / 2; // Center name text horizontally relative to Certificate text
+  // // Add Text
+  // const certTextWidth = funtasticFont.widthOfTextAtSize('CERTIFICATE', 62.8);
+  // const certTextX = width / 6.37;
+  // const nameTextWidth = funtasticFont.widthOfTextAtSize(
+  //   certificate.name.toUpperCase(),
+  //   37,
+  // );
+  // const nameTextX = certTextX + (certTextWidth - nameTextWidth) / 2; // Center name text horizontally relative to Certificate text
 
-  page.drawText(data.name.toUpperCase(), {
-    x: nameTextX,
-    y: height - 308,
-    size: 37,
-    font: funtasticFont,
-    color: textColor,
-  });
-  page.drawText(format(data.issueDate, 'do MMMM, yyyy'), {
-    x: 322,
-    y: height - 359.5,
-    size: 16.2,
-    font: balsamiqFont,
-    color: textColor,
-  });
+  // page.drawText(certificate.name.toUpperCase(), {
+  //   x: nameTextX,
+  //   y: height - 308,
+  //   size: 37,
+  //   font: funtasticFont,
+  //   color: textColor,
+  // });
+  // page.drawText(format(certificate.issueDate, 'do MMMM, yyyy'), {
+  //   x: 322,
+  //   y: height - 359.5,
+  //   size: 16.2,
+  //   font: balsamiqFont,
+  //   color: textColor,
+  // });
 
   // Save and return PDF
   const pdfBytes = await pdfDoc.save();
