@@ -21,7 +21,7 @@ export class InstitutionController {
     return await this.institutionService.getDashboard(institutionId);
   }
 
-  @Post(':id/upload-data')
+  @Post(':id/upload-bulk-data')
   @UseInterceptors(FileInterceptor('file'))
   async uploadBulkData(
     @UploadedFile() file: Express.Multer.File,
@@ -39,7 +39,7 @@ export class InstitutionController {
     return await this.institutionService.uploadImage(file, institutionId);
   }
 
-  @Post(':institutionId/upload-images')
+  @Post(':institutionId/upload-bulk-images')
   @UseInterceptors(FileInterceptor('zipFile'))
   async uploadBulkImages(
     @UploadedFile() zipFile: Express.Multer.File,
@@ -68,7 +68,7 @@ export class InstitutionController {
     res.send(await pdfBuffer);
   }
 
-  @Post(':institutionId/generate-certificates')
+  @Post(':institutionId/generate-bulk-certificates')
   @Header('Content-Type', 'application/pdf')
   async generateBulkCertificates(
     @Param('institutionId') institutionId: string,
