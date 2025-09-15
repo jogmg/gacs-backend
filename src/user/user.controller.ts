@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
@@ -35,8 +27,8 @@ export class UserController {
     return await this.userService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.userService.delete(id);
-  }
+  // @Delete(':id')
+  // async delete(@Param('id') id: string): Promise<(import("mongoose").Document<unknown, {}, import("c:/Users/Joshua/Desktop/Jogmg/gacs-backend/src/user/entities/user.entity").User, {}, {}> & import("c:/Users/Joshua/Desktop/Jogmg/gacs-backend/src/user/entities/user.entity").User & Required<{ _id: unknown; }> & { __v: number; }) | null> {
+  //   return await this.userService.delete(id);
+  // }
 }

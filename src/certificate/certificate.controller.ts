@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { CertificateService } from './certificate.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
@@ -38,8 +30,8 @@ export class CertificateController {
     return await this.certificateService.update(id, updateCertificateDto);
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.certificateService.delete(id);
-  }
+  // @Delete(':id')
+  // async delete(@Param('id') id: string) {
+  //   return await this.certificateService.delete(id);
+  // }
 }
