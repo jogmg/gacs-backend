@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { InstitutionService } from 'src/institution/institution.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './entities/student.entity';
@@ -9,9 +10,15 @@ import { Student } from './entities/student.entity';
 export class StudentService {
   constructor(
     @InjectModel(Student.name) private studentService: Model<Student>,
+    private institutionService: InstitutionService,
   ) {}
 
   async create(createStudentDto: CreateStudentDto) {
+    const studentCode = await this.institutionService.generateStudentCode(
+      createStudentDto.institution,
+      createStudentDto.program,
+    );
+    createStudentDto.code = studentCode;
     return await this.studentService.create(createStudentDto);
   }
 
