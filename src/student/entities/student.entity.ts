@@ -12,7 +12,7 @@ export class Student extends BaseSchema {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Program' })
   program: Program;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, sparse: true })
   code: string;
 
   @Prop({ required: true })

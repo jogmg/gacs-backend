@@ -10,7 +10,7 @@ import { Certificate } from 'src/certificate/entities/certificate.entity';
 export async function generateCertificate(
   certificate: Certificate,
   verificationUrl: string,
-): Promise<Buffer> {
+) {
   // Load template
   const templatePath = join(
     __dirname,
@@ -29,16 +29,54 @@ export async function generateCertificate(
   const qrCodeData = `${verificationUrl}/${certificate._id}`;
   const qrCode = await QRCode.toDataURL(qrCodeData, { width: 200 });
 
-  // Embed QR code (bottom)
+  // Embed QR code
   const qrImage = await pdfDoc.embedPng(
     Buffer.from(qrCode.split(',')[1], 'base64'),
   );
+
   page.drawImage(qrImage, {
-    x: (width - 100) / 2,
+    x: width / 2 - 52.5,
     y: 55,
     width: 105,
     height: 105,
   });
+
+  const mainColor = rgb(0, 0.05, 0.329);
+
+  // Fetch and embed image in PDFDoc
+  if (certificate.student.imgURL) {
+    try {
+      const res = await fetch(certificate.student.imgURL);
+      const imageBytes = await res.arrayBuffer();
+      const image = await pdfDoc.embedJpg(Buffer.from(imageBytes));
+      const scaledImage = image.scaleToFit(115, 154);
+
+      // Define image position and dimensions
+      const imageX = 79.5;
+      const imageY = height - 300;
+      const imageWidth = scaledImage.width;
+      const imageHeight = scaledImage.height;
+
+      // Draw border around the image
+      page.drawRectangle({
+        x: imageX - 2,
+        y: imageY - 2,
+        width: imageWidth + 4,
+        height: imageHeight + 4,
+        borderColor: mainColor,
+        borderWidth: 2,
+      });
+
+      page.drawImage(image, {
+        x: imageX,
+        y: imageY,
+        width: imageWidth,
+        height: imageHeight,
+      });
+    } catch {
+      console.log('Error fetching student image');
+    }
+  }
 
   // Add Font and Color
   const engagementPath = join(
@@ -63,7 +101,6 @@ export async function generateCertificate(
   const montserratFont = await pdfDoc.embedFont(montserratData);
 
   const engagementColor = rgb(0, 0, 0);
-  const engrvrsOldEngColor = rgb(0, 0.05, 0.329);
 
   // Add SubHeading Text
   const subHeadingWidth = engagementFont.widthOfTextAtSize(
@@ -95,7 +132,7 @@ export async function generateCertificate(
     y: height - 305,
     size: 65,
     font: engrvrsOldEngFont,
-    color: engrvrsOldEngColor,
+    color: mainColor,
   });
 
   // Add Date Text
@@ -110,7 +147,7 @@ export async function generateCertificate(
     y: height - 416,
     size: 18,
     font: montserratFont,
-    color: engrvrsOldEngColor,
+    color: mainColor,
   });
 
   // Save and return PDF

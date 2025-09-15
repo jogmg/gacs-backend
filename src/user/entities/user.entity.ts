@@ -6,7 +6,7 @@ export class User extends BaseSchema {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, sparse: true })
   email: string;
 
   @Prop()

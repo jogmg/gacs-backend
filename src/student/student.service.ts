@@ -23,6 +23,10 @@ export class StudentService {
     return await this.studentService.find();
   }
 
+  async findByInstitutionId(institutionId: string) {
+    return await this.studentService.find({ institution: institutionId });
+  }
+
   async findOne(id: string) {
     return await this.studentService.findById(id);
   }

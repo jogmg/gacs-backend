@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import AdmZip from 'adm-zip';
+import { format } from 'date-fns';
 import { lastValueFrom } from 'rxjs';
 import { CertificateService } from 'src/certificate/certificate.service';
 import { ProgramService } from 'src/program/program.service';
@@ -39,20 +40,7 @@ export class InstitutionService {
     return dashboardData;
   }
 
-  async generateStudentCode(institutionId: string, programId: string) {
-    const institution =
-      await this.userService.incrementStudentCount(institutionId);
-    if (!institution) throw new NotFoundException('Institution not found');
-
-    const program = await this.programService.findOneById(programId);
-    if (!program) throw new NotFoundException('Program not found');
-
-    const studentCode =
-      program.code + String(institution.studentCount).padStart(4, '0');
-    return studentCode;
-  }
-
-  async uploadStudentData(file: Express.Multer.File, institutionId: string) {
+  async uploadBulkData(file: Express.Multer.File, institutionId: string) {
     const workbook = XLSX.read(file.buffer, { type: 'buffer' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const students = XLSX.utils.sheet_to_json(sheet);
@@ -92,7 +80,7 @@ export class InstitutionService {
     return await this.studentService.createMany(studentDocs);
   }
 
-  async uploadStudentImage(file: Express.Multer.File, institutionId: string) {
+  async uploadImage(file: Express.Multer.File, institutionId: string) {
     const formData = new FormData();
     formData.append(
       'image',
@@ -127,25 +115,7 @@ export class InstitutionService {
     );
   }
 
-  private getMimeType(filename: string) {
-    const extension = filename.split('.').pop()?.toLowerCase();
-    const mimeTypes = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      webp: 'image/webp',
-      svg: 'image/svg+xml',
-      bmp: 'image/bmp',
-      tiff: 'image/tiff',
-    };
-    return mimeTypes[extension!] || 'application/octet-stream';
-  }
-
-  async uploadStudentImages(
-    zipFile: Express.Multer.File,
-    institutionId: string,
-  ) {
+  async uploadBulkImages(zipFile: Express.Multer.File, institutionId: string) {
     const zip = new AdmZip(zipFile.buffer);
     const zipEntries = zip.getEntries().filter((entry) => !entry.isDirectory);
 
@@ -167,10 +137,7 @@ export class InstitutionService {
           path: '',
         };
 
-        const result = await this.uploadStudentImage(
-          extractedFile,
-          institutionId,
-        );
+        const result = await this.uploadImage(extractedFile, institutionId);
 
         return {
           filename: entry.entryName,
@@ -182,7 +149,7 @@ export class InstitutionService {
     return results;
   }
 
-  async generateStudentCertificate(institutionId: string, studentId: string) {
+  async generateCertificate(institutionId: string, studentId: string) {
     let certificate = await this.certificateService.findByInstitutionAndStudent(
       institutionId,
       studentId,
@@ -197,11 +164,72 @@ export class InstitutionService {
 
     const studentName = normalizeToLowercase(certificate.student.name);
     const studentCode = certificate.student.code;
-    const fileName = `${studentName}_${studentCode}_graduation_certificate.pdf`;
+    const fileName = `${studentName}_${studentCode}_certificate.pdf`;
 
     const verificationUrl = `${this.configService.get<string>('FRONTEND_URL')}/verify`;
     const pdfBuffer = generateCertificate(certificate, verificationUrl);
 
-    return { fileName, pdfBuffer };
+    return { pdfBuffer, fileName };
+  }
+
+  async generateBulkCertificates(institutionId: string) {
+    const students =
+      await this.studentService.findByInstitutionId(institutionId);
+
+    const certificates = await Promise.all(
+      students.map(async (student) =>
+        this.generateCertificate(institutionId, String(student._id)),
+      ),
+    );
+
+    return certificates;
+  }
+
+  async generateStudentCode(institutionId: string, programId: string) {
+    const institution =
+      await this.userService.incrementStudentCount(institutionId);
+    if (!institution) throw new NotFoundException('Institution not found');
+
+    const program = await this.programService.findOneById(programId);
+    if (!program) throw new NotFoundException('Program not found');
+
+    const studentCode =
+      program.code + String(institution.studentCount).padStart(4, '0');
+    return studentCode;
+  }
+
+  private getMimeType(filename: string) {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    const mimeTypes = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+      bmp: 'image/bmp',
+      tiff: 'image/tiff',
+    };
+    return mimeTypes[extension!] || 'application/octet-stream';
+  }
+
+  async zipCertificates(
+    certificates: {
+      fileName: string;
+      pdfBuffer: Promise<Buffer<ArrayBuffer>>;
+    }[],
+  ) {
+    const zip = new AdmZip();
+
+    await Promise.all(
+      certificates.map(async ({ fileName, pdfBuffer }) => {
+        zip.addFile(fileName, Buffer.from(await pdfBuffer));
+      }),
+    );
+
+    const zipBuffer = zip.toBuffer();
+    const zipFileName = `certificates_${format(Date.now(), 'yyyy')}.zip`;
+
+    return { zipBuffer, zipFileName };
   }
 }

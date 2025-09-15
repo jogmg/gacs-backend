@@ -21,53 +21,74 @@ export class InstitutionController {
     return await this.institutionService.getDashboard(institutionId);
   }
 
-  @Post(':id/upload-students-data')
+  @Post(':id/upload-data')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadStudentData(
+  async uploadBulkData(
     @UploadedFile() file: Express.Multer.File,
     @Param('id') institutionId: string,
   ) {
-    return await this.institutionService.uploadStudentData(file, institutionId);
+    return await this.institutionService.uploadBulkData(file, institutionId);
   }
 
-  @Post(':institutionId/upload-student-image')
+  @Post(':institutionId/upload-image')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadStudentImage(
+  async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Param('institutionId') institutionId: string,
   ) {
-    return await this.institutionService.uploadStudentImage(
-      file,
-      institutionId,
-    );
+    return await this.institutionService.uploadImage(file, institutionId);
   }
 
-  @Post(':institutionId/upload-student-images')
+  @Post(':institutionId/upload-images')
   @UseInterceptors(FileInterceptor('zipFile'))
-  async uploadStudentImages(
+  async uploadBulkImages(
     @UploadedFile() zipFile: Express.Multer.File,
     @Param('institutionId') institutionId: string,
   ) {
-    return await this.institutionService.uploadStudentImages(
+    return await this.institutionService.uploadBulkImages(
       zipFile,
       institutionId,
     );
   }
 
-  @Post(':institutionId/generateCertificate/:studentId')
+  @Post(':institutionId/generate-certificate/:studentId')
   @Header('Content-Type', 'application/pdf')
-  async generateStudentCertificate(
+  async generateCertificate(
     @Param('institutionId') institutionId: string,
     @Param('studentId') studentId: string,
     @Res() res: Response,
   ) {
     const { pdfBuffer, fileName } =
-      await this.institutionService.generateStudentCertificate(
+      await this.institutionService.generateCertificate(
         institutionId,
         studentId,
       );
 
     res.attachment(fileName);
     res.send(await pdfBuffer);
+  }
+
+  @Post(':institutionId/generate-certificates')
+  @Header('Content-Type', 'application/pdf')
+  async generateBulkCertificates(
+    @Param('institutionId') institutionId: string,
+    @Res() res: Response,
+  ) {
+    const certificates =
+      await this.institutionService.generateBulkCertificates(institutionId);
+
+    // If only one certificate, send it directly
+    if (certificates.length === 1) {
+      const { pdfBuffer, fileName } = certificates[0];
+      res.attachment(fileName);
+      return res.send(await pdfBuffer);
+    }
+
+    // If multiple certificates, zip them and send
+    const { zipBuffer, zipFileName } =
+      await this.institutionService.zipCertificates(certificates);
+
+    res.attachment(zipFileName);
+    res.send(zipBuffer);
   }
 }
