@@ -81,51 +81,38 @@ export class InstitutionService {
   }
 
   async uploadImage(file: Express.Multer.File, institutionId: string) {
-    const cleanup = () => {
-      if (global.gc) {
-        global.gc();
-      }
-    };
+    const formData = new FormData();
+    formData.append(
+      'image',
+      new Blob([new Uint8Array(file.buffer)]),
+      file.originalname,
+    );
 
-    try {
-      const formData = new FormData();
-      formData.append(
-        'image',
-        new Blob([new Uint8Array(file.buffer)]),
-        file.originalname,
-      );
+    const studentCode = file.originalname.split('.')[0];
 
-      const studentCode = file.originalname.split('.')[0];
+    const student = await this.studentService.findOneByInstitution(
+      institutionId,
+      studentCode,
+    );
 
-      const student = await this.studentService.findOneByInstitution(
-        institutionId,
-        studentCode,
-      );
-
-      if (!student) {
-        return new NotFoundException('Student not found').getResponse();
-      }
-
-      const response = await lastValueFrom(
-        this.httpService.post('https://api.imgbb.com/1/upload', formData, {
-          params: { key: this.configService.get<string>('IMGBB_API_KEY') },
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }),
-      );
-
-      const imgUpdate = { imgURL: response.data.data.url };
-
-      return await this.studentService.findOneByInstituitonAndUpdate(
-        institutionId,
-        studentCode,
-        imgUpdate,
-      );
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new Error('Failed to upload image');
-    } finally {
-      cleanup();
+    if (!student) {
+      return new NotFoundException('Student not found').getResponse();
     }
+
+    const response = await lastValueFrom(
+      this.httpService.post('https://api.imgbb.com/1/upload', formData, {
+        params: { key: this.configService.get<string>('IMGBB_API_KEY') },
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    );
+
+    const imgUpdate = { imgURL: response.data.data.url };
+
+    return await this.studentService.findOneByInstituitonAndUpdate(
+      institutionId,
+      studentCode,
+      imgUpdate,
+    );
   }
 
   async uploadBulkImages(zipFile: Express.Multer.File, institutionId: string) {

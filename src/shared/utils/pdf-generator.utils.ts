@@ -11,13 +11,6 @@ export async function generateCertificate(
   certificate: Certificate,
   verificationUrl: string,
 ) {
-  // clean up memory
-  const cleanup = () => {
-    if (global.gc) {
-      global.gc();
-    }
-  };
-
   // Load template
   const templatePath = join(
     __dirname,
@@ -82,8 +75,6 @@ export async function generateCertificate(
       });
     } catch {
       console.log('Error fetching student image');
-    } finally {
-      cleanup();
     }
   }
 
