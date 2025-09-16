@@ -12,7 +12,7 @@ export class CreateStudentDto {
   @IsMongoId()
   program: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   code: string;
 
   @IsNotEmpty()
