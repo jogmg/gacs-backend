@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import AdmZip from 'adm-zip';
 import { format } from 'date-fns';
@@ -19,6 +19,7 @@ export class InstitutionService {
     private userService: UserService,
     private programService: ProgramService,
     private certificateService: CertificateService,
+    @Inject(forwardRef(() => StudentService))
     private studentService: StudentService,
     private httpService: HttpService,
     private configService: ConfigService,

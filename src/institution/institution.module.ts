@@ -10,7 +10,7 @@ import { InstitutionService } from './institution.service';
 @Module({
   imports: [
     UserModule,
-    forwardRef(() => StudentModule),
+    StudentModule,
     ProgramModule,
     CertificateModule,
     HttpModule,
