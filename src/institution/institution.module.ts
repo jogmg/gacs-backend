@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CertificateModule } from 'src/certificate/certificate.module';
 import { ProgramModule } from 'src/program/program.module';
 import { StudentModule } from 'src/student/student.module';
@@ -10,7 +10,7 @@ import { InstitutionService } from './institution.service';
 @Module({
   imports: [
     UserModule,
-    StudentModule,
+    forwardRef(() => StudentModule),
     ProgramModule,
     CertificateModule,
     HttpModule,
